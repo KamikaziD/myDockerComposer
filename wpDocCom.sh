@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ./functions.sh
+. ./wpFunctions.sh
 . ./fonts.sh
 
 print_menu() {
