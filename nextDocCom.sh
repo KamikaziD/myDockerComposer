@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ./scripts/wordpress/wpFunctions.sh
+. ./scripts/nextjs/nextFunctions.sh
 . ./scripts/common/fonts.sh
 
 print_menu() {
@@ -13,7 +13,7 @@ print_menu() {
     echo -e "${ITALICBLUE}1. Generate ${BOLDYELLOW}docker.compose.yml${ENDCOLOR}"
     echo -e "${ITALICBLUE}2. Check if ${BOLDYELLOW}Docker & Docker Compose${ENDCOLOR} is installed"
     echo
-    echo -e "${ENDCOLOR}Choose (1-2) or back (b):"
+    echo -e "${ENDCOLOR}Choose (1-2) or quit (q):"
 }
 
 while true; do

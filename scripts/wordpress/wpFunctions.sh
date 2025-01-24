@@ -28,13 +28,13 @@ handle_menu() {
   case "${choice}" in
     1) generate_doc_com;;
     2) check_doc_com;;
-    "q" | "Q")
+    "b" | "B")
       clear
-      echo "If you enjoy using this script then send Detmar some Windhoek Draughts!"
-      echo "I think he will appreciate it"
-      echo
+#      echo "If you enjoy using this script then send Detmar some Windhoek Draughts!"
+#      echo "I think he will appreciate it"
+#      echo
       # shellcheck disable=SC2162
-      read -p "Press Enter to exit..."
+#      read -p "Press Enter to exit..."
       exit 0;;
     *)
       echo "Invalid option. Press any key to continue..."
@@ -56,9 +56,9 @@ print_wp_version_menu() {
 print_php_version_menu() {
   clear
   echo "Choose your PHP version:"
-  echo "2. PHP 8.1"
-  echo "3. PHP 8.2"
-  echo "4. PHP 8.3"
+  echo "1. PHP 8.1"
+  echo "2. PHP 8.2"
+  echo "3. PHP 8.3"
   echo "q. Quit"
 }
 
@@ -184,7 +184,8 @@ generate_env_file() {
 
 generate_docker_compose_file() {
   project_name="${project_name// /_}"
-  mkdir "${project_name}"
+  handle_project_directory
+
   cd "$project_name" || return
   generate_env_file
   print_wp_version_menu
@@ -255,6 +256,30 @@ generate_docker_compose_file() {
   echo
   echo "Docker Compose file generated successfully!"
   echo
+}
+
+handle_project_directory() {
+  p_name="${project_name// /_}"
+  cd "projects" || exit 1;
+  if [ ! -d "${p_name}" ]; then
+      echo "Creating new project folder..."
+      mkdir "${p_name}"
+      sleep 1
+  else
+    echo "Project directory already exists."
+    read -p "Do you want to overwrite it? (y/N): " overwrite_choice
+    if [[ $overwrite_choice == "y" || $overwrite_choice == "Y" ]]; then
+      rm -rf "${p_name}"
+      mkdir "${p_name}"
+    else
+      clear
+      read -p "Please enter a project name: " new_project_name
+      project_name="${new_project_name// /_}"
+      mkdir "${new_project_name// /_}"
+    fi
+    ls
+#    cd "projects" || exit 1
+  fi
 }
 
 generate_doc_com() {
@@ -344,6 +369,7 @@ generate_doc_com() {
 #    echo "Docker Compose file generated successfully!"
 #    echo
     create_readme
+    cd ../..
     # shellcheck disable=SC2162
     read -p "Press Enter to continue..."
   fi
