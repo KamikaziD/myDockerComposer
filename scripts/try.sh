@@ -1,4 +1,4 @@
-#!/bin/bash
+
 
 test_function() {
   local project_name

@@ -1,5 +1,5 @@
-# My Docker Composer
-Shell Scripts to get your dockerized project up and running in no time
+# DocCom - Docker Composer
+Shell Script to get your dockerized project up and running in no time
 
 ## Scripts
 
@@ -13,8 +13,8 @@ Shell Scripts to get your dockerized project up and running in no time
   - Wordpress (v5 -> v6.7.1) *including `latest` option*
   - MySQL `latest` *option only*
   - phpMyAdmin
-- **Python**
 - **Typescript / Javascript**
+- **Python**
 
 
 ### Prerequisites:

@@ -1,3 +1,7 @@
+#!/bin/bash
+
+handle_project_directory ./scripts/common/functions.sh
+
 declare -A selected=([1]=1 [2]=0 [3]=0 [4]=0)
 
 declare -A @project_name
@@ -13,7 +17,6 @@ declare -A services=(
     [3]="pgAdmin"
     [4]="Redis"
 )
-
 
 print_services_menu() {
     clear
@@ -121,7 +124,8 @@ handle_next_js() {
   read -p "Use defaults (y/n)? " defaults
 
   read -p "What is your project Name? " project_name
-  cmd+=" ${project_name}"
+
+  cmd+=" ${project_name// /_}"
 
   if [[ ${defaults} == "y" ]]; then
     echo "Defaults used..."
@@ -219,18 +223,23 @@ handle_next_js() {
   cmd+=" --yes"
   read -p "Press any key to continue..."
 
-  $cmd
-  clear
-  echo "Next.js Project Created Successfully: ${project_name}"
-  sleep 1
+# HERE ------------------------------------------################################
   echo "Creating Dockerfile"
-  cd "${project_name}" || exit 1
+  handle_project_directory "${project_name}"
+  $cmd
+  sleep 1
+  clear
+
+
+  cd "${project_name}" || echo "Something went wrong. Line 232"
   create_docker_file
   sleep 1
   echo "Creating docker-compose.yaml"
   create_docker_compose
+  echo "Next.js Project Created Successfully: ${project_name}"
   sleep 2
-  run_docker_compose
+  cd ../..
+#  run_docker_compose
 }
 
 handle_postgres() {
@@ -282,8 +291,8 @@ while true; do
 
   read -p "Select services  to add (1-4) or ('c' to continue 'q' to quit): " choice
 
-  if [[ $choice == 'q' ]]; then
-    echo "Exiting..."
+  if [[ $choice == 'b' || $choice == 'B' ]]; then
+#    echo "Exiting..."
     break
   fi
 
