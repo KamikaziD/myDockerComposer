@@ -1,15 +1,15 @@
 #!/bin/bash
 
-handle_project_directory() {
-  local project_name
+global g_project_name
 
+handle_project_directory() {
   if [ -z "$1" ]; then
     echo "Error: Something went wrong - please try again"
     exit 1
   else
-    project_name=$1
+    g_project_name=$1
   fi
-  p_name="${project_name// /_}"
+  p_name="${g_project_name// /_}"
   cd "projects" || exit 1;
   if [ ! -d "${p_name}" ]; then
       echo "Creating new project folder..."
@@ -22,12 +22,46 @@ handle_project_directory() {
       rm -rf "${p_name}"
       mkdir "${p_name}"
     else
-      clear
-      read -p "Please enter a project name: " new_project_name
-      project_name="${new_project_name// /_}"
-      mkdir "${new_project_name// /_}"
+      exit 1
     fi
-    ls
-#    cd "projects" || exit 1
   fi
+}
+
+find_function() {
+  local search_string
+  local new_string
+  local file_name
+  local dir_path
+
+  if [ -z "$1" ] && [ -z "$2" ] && [ -z "$3" ] && [ -z "$4" ]; then
+    echo "Parameter missing: "
+    echo "Usage: find_function <search_string> <new_string> <file_name> <directory_path>"
+    exit 1
+  else
+    search_string="$1"
+    new_string="$2"
+    file_name="$3"
+    dir_path="$4"
+    if [[ $dir_path != '.' ]]; then
+      echo "Changing directory to: $dir_path"
+      cd "${dir_path}" || exit 1
+    fi
+    lineNumber="$(grep -n "$search_string" "$file_name" | tail -n 1 | cut -d: -f1)"
+    if [[ ${lineNumber} == "" ]]; then
+      echo "No occurrences found"
+      exit 0
+    else
+      # shellcheck disable=SC1004
+      sed "${lineNumber}"'a\
+'"  $new_string:"'
+      ' < "${file_name}" >> tmp.yaml
+      mv tmp.yaml "$file_name"
+    fi
+  fi
+}
+
+get_current_dir() {
+  local directory
+  directory=$(pwd)
+  echo "${directory}"
 }

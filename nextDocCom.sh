@@ -1,7 +1,9 @@
 #!/bin/bash
 
 . ./scripts/common/fonts.sh
+. ./scripts/common/functions.sh
 
+global working_dir
 
 handle_menu() {
   local choice
@@ -11,6 +13,10 @@ handle_menu() {
       clear
       ./scripts/nextjs/nextFunctions.sh ;;
     "2") echo "check_docker_and_compose";;
+    "3")
+      working_dir=$(get_current_dir)
+      echo "${working_dir}"
+      sleep 2 ;;
     "b" | "B")
       clear
       exit 0 ;;
@@ -21,7 +27,7 @@ print_menu() {
     clear
     echo
 #    print_banner
-    echo -e "${BOLDBLUE} NextJS Docker Generator${ENDCOLOR}"
+    echo -e "${BOLDBLUE}NextJS Docker Generator${ENDCOLOR}"
     echo
     echo -e "${UNDERLINEYELLOW} Select action type:${ENDCOLOR}"
     echo -e "${ITALICBLUE}1. Generate ${BOLDYELLOW}docker.compose.yml${ENDCOLOR}"
