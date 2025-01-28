@@ -1,3 +1,7 @@
+#!/bin/bash
+
+. ./scripts/common/functions.sh
+
 declare -A selected=([1]=1 [2]=0 [3]=0 [4]=0)
 
 declare -A @project_name
@@ -13,7 +17,6 @@ declare -A services=(
     [3]="pgAdmin"
     [4]="Redis"
 )
-
 
 print_services_menu() {
     clear
@@ -94,6 +97,8 @@ run_docker_compose() {
 
 
 create_docker_compose() {
+  # ----------> Add IF statements based on OPTIONS SELECTED
+
   # shellcheck disable=SC2129
   echo "services:" >> docker-compose.yaml
   echo "  app:" >> docker-compose.yaml
@@ -108,20 +113,173 @@ create_docker_compose() {
   echo "      - /app/node_modules" >> docker-compose.yaml
   echo "      - /app/.next" >> docker-compose.yaml
   echo "    ports:" >> docker-compose.yaml
-  echo "      - \"3000:3000\"" >> docker-compose.yaml
+  # shellcheck disable=SC2016
+  echo '      - ${PORT}:${PORT}' >> docker-compose.yaml
+  if [[ ${selected[2]} == 1 || ${selected[3]} == 1 || ${selected[4]} == 1 ]]; then
+    # shellcheck disable=SC2129
+    echo "    depends_on:" >> docker-compose.yaml
+  fi
+  if [[ ${selected[2]} == 1 ]]; then
+    echo "      db:" >> docker-compose.yaml
+    echo "        condition: service_healthy" >> docker-compose.yaml
+  fi
+  if [[ ${selected[4]} == 1 ]]; then
+    echo "      redis:" >> docker-compose.yaml
+    echo "        condition: service_healthy" >> docker-compose.yaml
+  fi
+  echo "" >> docker-compose.yaml
+
+  if [[ ${selected[2]} == 1 ]]; then
+    # shellcheck disable=SC2129
+    echo "  db:" >> docker-compose.yaml
+    echo "    image: postgres:16-alpine" >> docker-compose.yaml
+    echo "    restart: always" >> docker-compose.yaml
+    echo "    ports:" >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      - ${POSTGRES_PORT}:${POSTGRES_PORT}' >> docker-compose.yaml
+    echo "    environment:" >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      POSTGRES_USER: ${POSTGRES_USER}' >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}' >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      POSTGRES_DB: ${POSTGRES_DB}' >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      POSTGRES_PORT: ${POSTGRES_PORT}' >> docker-compose.yaml
+    echo "    env_file:" >> docker-compose.yaml
+    echo "      - .env" >> docker-compose.yaml
+    echo "    volumes:" >> docker-compose.yaml
+    echo "      - postgres_data:/var/lib/postgresql/data/" >> docker-compose.yaml
+    echo "    healthcheck:" >> docker-compose.yaml
+    echo "      test: [ 'CMD-SHELL', 'pg_isready -U admin -d ${project_name// /_}_db' ]" >> docker-compose.yaml
+    echo "      interval: 1s" >> docker-compose.yaml
+    echo "      timeout: 5s" >> docker-compose.yaml
+    echo "      retries: 5" >> docker-compose.yaml
+    echo "" >> docker-compose.yaml
+  fi
+
+  if [[ ${selected[3]} == 1 ]]; then
+    # shellcheck disable=SC2129
+    echo "  pgadmin:" >> docker-compose.yaml
+    echo "    image: dpage/pgadmin4" >> docker-compose.yaml
+    echo "    container_name: pgadmin4_container" >> docker-compose.yaml
+    echo "    restart: always" >> docker-compose.yaml
+    echo "    ports:" >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      - ${PGADMIN_PORT}:80' >> docker-compose.yaml
+    echo "    environment:" >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}' >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}' >> docker-compose.yaml
+    echo "    volumes:" >> docker-compose.yaml
+    echo "      - pgadmin_data:/var/lib/pgadmin" >> docker-compose.yaml
+    echo ""
+  fi
+
+  if [[ ${selected[4]} == 1 ]]; then
+    # shellcheck disable=SC2129
+    echo "  redis:" >> docker-compose.yaml
+    echo "    image: redis:6-alpine" >> docker-compose.yaml
+    echo "    restart: always" >> docker-compose.yaml
+    echo "    ports:" >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      - ${REDIS_PORT}:${REDIS_PORT}' >> docker-compose.yaml
+    echo "    environment:" >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      REDIS_PASSWORD: ${REDIS_PASSWORD}' >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '      REDIS_PORT: ${REDIS_PORT}' >> docker-compose.yaml
+    echo "    env_file:" >> docker-compose.yaml
+    echo "      - .env" >> docker-compose.yaml
+    # shellcheck disable=SC2016
+    echo '    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}' >> docker-compose.yaml
+    echo "    volumes:" >> docker-compose.yaml
+    echo "      - redis_data:/data" >> docker-compose.yaml
+    echo "    healthcheck:" >> docker-compose.yaml
+    echo '      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]' >> docker-compose.yaml
+    echo "      interval: 1s" >> docker-compose.yaml
+    echo "      timeout: 5s" >> docker-compose.yaml
+    echo "      retries: 5" >> docker-compose.yaml
+    echo "" >> docker-compose.yaml
+  fi
+
+
+  echo "volumes:" >> docker-compose.yaml
+  echo "" >> docker-compose.yaml
+
+  if [[ ${selected[2]} == 1 ]]; then
+    find_function "volumes:" "postgres_data" "docker-compose.yaml" "."
+  fi
+
+  if [[ ${selected[3]} == 1 ]]; then
+    find_function "volumes:" "pgadmin_data" "docker-compose.yaml" "."
+  fi
+
+  if [[ ${selected[4]} == 1 ]]; then
+    find_function "volumes:" "redis_data" "docker-compose.yaml" "."
+  fi
+}
+
+create_env_file() {
+  local app_name
+  if [ -z "$1" ]; then
+    echo "Error: Application Name is required."
+    exit 1
+  else
+    app_name="$1"
+#    echo "Application Name: $1"
+
+    # shellcheck disable=SC2129
+    if [[ ${selected[1]} == 1 ]]; then
+      echo "# NEXTJS" >> .env
+      echo "PORT=3000" >> .env
+      echo "" >> .env
+    fi
+    if [[ ${selected[2]} == 1 ]]; then
+      # shellcheck disable=SC2129
+      echo "# POSTGRESQL" >> .env
+      echo "POSTGRES_HOST=db" >> .env
+      echo "POSTGRES_USER=admin" >> .env
+      echo "POSTGRES_PASSWORD=postgres" >> .env
+      echo "POSTGRES_DB=${app_name}_db" >> .env
+      echo "POSTGRES_PORT=5432" >> .env
+      # shellcheck disable=SC2016
+      echo 'DATABASE_URL=jdbc:postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB' >> .env
+      echo "" >> .env
+    fi
+    if [[ ${selected[3]} == 1 ]]; then
+      # shellcheck disable=SC2129
+      echo "# PGADMIN" >> .env
+      echo "PGADMIN_PORT=8888" >> .env
+      echo "PGADMIN_DEFAULT_EMAIL=admin@example.com" >> .env
+      echo "PGADMIN_DEFAULT_PASSWORD=password" >> .env
+      echo "" >> .env
+    fi
+    if [[ ${selected[4]} == 1 ]]; then
+      # shellcheck disable=SC2129
+      echo "# REDIS" >> .env
+      echo "REDIS_HOST=redis" >> .env
+      echo "REDIS_PORT=6379" >> .env
+      echo "REDIS_PASSWORD=redis" >> .env
+      echo "" >> .env
+    fi
+  fi
 }
 
 handle_next_js() {
   local cmd="npx create-next-app@latest"
   local answer
   local defaults
+  local p_name
   sleep 1
   clear
   echo "Creating Next.js"
   read -p "Use defaults (y/n)? " defaults
 
   read -p "What is your project Name? " project_name
-  cmd+=" ${project_name}"
+  p_name="${project_name// /_}"
+  cmd+=" ${project_name// /_}"
 
   if [[ ${defaults} == "y" ]]; then
     echo "Defaults used..."
@@ -155,7 +313,7 @@ handle_next_js() {
         tailwind=1
         break
       elif [[ ${answer} == "n" ]]; then
-        cmd+=" -no-tailwind"
+        cmd+=" --no-tailwind"
         tailwind=0
         break
       fi
@@ -181,7 +339,7 @@ handle_next_js() {
         eslint=1
         break
       elif [[ ${answer} == "n" ]]; then
-        cmd+=" -no-eslint"
+        cmd+=" --no-eslint"
         eslint=0
         break
       fi
@@ -219,18 +377,49 @@ handle_next_js() {
   cmd+=" --yes"
   read -p "Press any key to continue..."
 
-  $cmd
-  clear
-  echo "Next.js Project Created Successfully: ${project_name}"
-  sleep 1
+# HERE ------------------------------------------################################
   echo "Creating Dockerfile"
-  cd "${project_name}" || exit 1
+  handle_project_directory "${project_name}"
+  $cmd
+  sleep 1
+  clear
+
+
+  cd "${p_name}" || echo "Something went wrong. Line 232"
+  create_env_file "${p_name}"
   create_docker_file
   sleep 1
   echo "Creating docker-compose.yaml"
   create_docker_compose
-  sleep 2
-  run_docker_compose
+  echo "Testing the insert line..."
+  cat docker-compose.yaml
+
+  read -p "Press enter to continue..."
+
+  echo "Next.js Project Created Successfully: ${project_name}"
+  sleep 1
+  clear
+  cd ../..
+
+  echo "Docker Compose File Created: docker-compose.yaml"
+  echo "Environment File Created:.env"
+  echo "Dockerfile Created: Dockerfile"
+  echo
+  sleep 1
+  echo "To build the NextJS image run the following:"
+  echo " - 'COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose build'"
+  echo
+  sleep 1
+  echo "To start the containers, run the following:"
+  echo " - 'docker compose up -d'"
+  echo
+  sleep 1
+  echo "To stop the containers, run the following:"
+  echo " - 'docker compose down --remove-orphans'"
+  echo
+  read -p "Press enter to continue"
+
+#  run_docker_compose
 }
 
 handle_postgres() {
@@ -239,7 +428,7 @@ handle_postgres() {
   echo "Creating PostgreSQL"
 #  create_docker_compose
   # Add logic here
-  read -p "Press any key to continue..."
+  read -p "Press enter to continue..."
 }
 
 handle_pgadmin() {
@@ -247,50 +436,51 @@ handle_pgadmin() {
   clear
   echo "Creating pgAdmin"
   # Add logic here
-  read -p "Press any key to continue..."
+  read -p "Press enter to continue..."
 }
 
 handle_selected_services() {
-  local selected_services=()
 
   echo "Applying selected Services:"
-  for ((i = 1; i <= ${#services[@]}; i++)); do
-    if [[ ${selected[$i]} == 1 ]]; then
-      if [[ ${services[$i]} == "PostgreSQL" ]]; then
-        # Add logic here
-        echo "  Service: PostgreSQL"
-        handle_postgres
-      elif [[ ${services[$i]} == "pgAdmin" ]]; then
-        # Add logic here
-        echo "  Service: PGAdmin"
-        handle_pgadmin
-      elif [[ ${services[$i]} == "Redis" ]]; then
-        # Add logic here
-        echo "  Service: Redis"
-      elif [[ ${services[$i]} == "NextJS" ]]; then
-        # Add logic here
-        echo "  Service: NextJS"
-        handle_next_js
-      fi
-    fi
-  done
+  handle_next_js
+#  for ((i = 1; i <= ${#services[@]}; i++)); do
+#    if [[ ${selected[$i]} == 1 ]]; then
+#      handle_next_js
+#      echo "  Service: NextJS"
+#      if [[ ${services[$i]} == "PostgreSQL" ]]; then
+#        # Add logic here
+#        echo "  Service: PostgreSQL"
+#        handle_postgres
+#      elif [[ ${services[$i]} == "pgAdmin" ]]; then
+#        # Add logic here
+#        echo "  Service: PGAdmin"
+#        handle_pgadmin
+#      elif [[ ${services[$i]} == "Redis" ]]; then
+#        # Add logic here
+#        echo "  Service: Redis"
+#      elif [[ ${services[$i]} == "NextJS" ]]; then
+#        # Add logic here
+#        echo "  Service: NextJS"
+#        handle_next_js
+#      fi
+#    fi
+#  done
 #  read -p "Press any key to continue..."
 }
 
 while true; do
   print_services_menu
 
-  read -p "Select services  to add (1-4) or ('c' to continue 'q' to quit): " choice
+  read -p "Select services  to add (1-4) or ('e' to execute 'b' back): " choice
 
-  if [[ $choice == 'q' ]]; then
-    echo "Exiting..."
+  if [[ $choice == 'b' || $choice == 'B' ]]; then
+#    echo "Exiting..."
     break
   fi
 
-  if [[ $choice == 'c' ]]; then
+  if [[ $choice == 'e' || $choice == 'E' ]]; then
     echo "Creating services..."
     handle_selected_services
-#    break
   fi
 
   if [[ $choice =~ ^[1-4]$ ]]; then

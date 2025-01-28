@@ -16,7 +16,8 @@ handle_menu() {
     2)
       echo ""
       echo "Typescript/Javascript Selected"
-      sleep 2 ;;
+      ./nextDocCom.sh ;;
+#      sleep 2 ;;
     3)
       echo ""
       echo "Python Selected"
