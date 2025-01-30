@@ -2,7 +2,7 @@
 
 . ./scripts/common/functions.sh
 
-declare -A selected=([1]=1 [2]=0 [3]=0 [4]=0)
+declare -A selected=([1]=0 [2]=0 [3]=0)
 
 declare -A @project_name
 declare -A @typescript=1
@@ -10,13 +10,17 @@ declare -A @tailwind=1
 declare -A @eslint=1
 declare -A @npm=1
 
-
 declare -A services=(
-    [1]="NextJS"
-    [2]="PostgreSQL"
-    [3]="pgAdmin"
-    [4]="Redis"
+    [1]="PostgreSQL"
+    [2]="pgAdmin"
+    [3]="Redis"
 )
+if [ -z "$1" ]; then
+  echo "Error: Project Type not supplied."
+  exit 1
+else
+  project_type="$1"
+fi
 
 print_services_menu() {
     clear
@@ -115,7 +119,7 @@ create_docker_compose() {
   echo "    ports:" >> docker-compose.yaml
   # shellcheck disable=SC2016
   echo '      - ${PORT}:${PORT}' >> docker-compose.yaml
-  if [[ ${selected[2]} == 1 || ${selected[3]} == 1 || ${selected[4]} == 1 ]]; then
+  if [[ ${selected[1]} == 1 || ${selected[3]} == 1 || ${selected[4]} == 1 ]]; then
     # shellcheck disable=SC2129
     echo "    depends_on:" >> docker-compose.yaml
   fi
@@ -123,13 +127,13 @@ create_docker_compose() {
     echo "      db:" >> docker-compose.yaml
     echo "        condition: service_healthy" >> docker-compose.yaml
   fi
-  if [[ ${selected[4]} == 1 ]]; then
+  if [[ ${selected[3]} == 1 ]]; then
     echo "      redis:" >> docker-compose.yaml
     echo "        condition: service_healthy" >> docker-compose.yaml
   fi
   echo "" >> docker-compose.yaml
 
-  if [[ ${selected[2]} == 1 ]]; then
+  if [[ ${selected[1]} == 1 ]]; then
     # shellcheck disable=SC2129
     echo "  db:" >> docker-compose.yaml
     echo "    image: postgres:16-alpine" >> docker-compose.yaml
@@ -158,7 +162,7 @@ create_docker_compose() {
     echo "" >> docker-compose.yaml
   fi
 
-  if [[ ${selected[3]} == 1 ]]; then
+  if [[ ${selected[2]} == 1 ]]; then
     # shellcheck disable=SC2129
     echo "  pgadmin:" >> docker-compose.yaml
     echo "    image: dpage/pgadmin4" >> docker-compose.yaml
@@ -177,7 +181,7 @@ create_docker_compose() {
     echo ""
   fi
 
-  if [[ ${selected[4]} == 1 ]]; then
+  if [[ ${selected[3]} == 1 ]]; then
     # shellcheck disable=SC2129
     echo "  redis:" >> docker-compose.yaml
     echo "    image: redis:6-alpine" >> docker-compose.yaml
@@ -208,15 +212,15 @@ create_docker_compose() {
   echo "volumes:" >> docker-compose.yaml
   echo "" >> docker-compose.yaml
 
-  if [[ ${selected[2]} == 1 ]]; then
+  if [[ ${selected[1]} == 1 ]]; then
     find_function "volumes:" "postgres_data" "docker-compose.yaml" "."
   fi
 
-  if [[ ${selected[3]} == 1 ]]; then
+  if [[ ${selected[2]} == 1 ]]; then
     find_function "volumes:" "pgadmin_data" "docker-compose.yaml" "."
   fi
 
-  if [[ ${selected[4]} == 1 ]]; then
+  if [[ ${selected[3]} == 1 ]]; then
     find_function "volumes:" "redis_data" "docker-compose.yaml" "."
   fi
 }
@@ -231,12 +235,12 @@ create_env_file() {
 #    echo "Application Name: $1"
 
     # shellcheck disable=SC2129
+#    if [[ ${selected[0]} == 1 ]]; then
+    echo "# NEXTJS" >> .env
+    echo "PORT=3000" >> .env
+    echo "" >> .env
+#    fi
     if [[ ${selected[1]} == 1 ]]; then
-      echo "# NEXTJS" >> .env
-      echo "PORT=3000" >> .env
-      echo "" >> .env
-    fi
-    if [[ ${selected[2]} == 1 ]]; then
       # shellcheck disable=SC2129
       echo "# POSTGRESQL" >> .env
       echo "POSTGRES_HOST=db" >> .env
@@ -248,7 +252,7 @@ create_env_file() {
       echo 'DATABASE_URL=jdbc:postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB' >> .env
       echo "" >> .env
     fi
-    if [[ ${selected[3]} == 1 ]]; then
+    if [[ ${selected[2]} == 1 ]]; then
       # shellcheck disable=SC2129
       echo "# PGADMIN" >> .env
       echo "PGADMIN_PORT=8888" >> .env
@@ -256,7 +260,7 @@ create_env_file() {
       echo "PGADMIN_DEFAULT_PASSWORD=password" >> .env
       echo "" >> .env
     fi
-    if [[ ${selected[4]} == 1 ]]; then
+    if [[ ${selected[3]} == 1 ]]; then
       # shellcheck disable=SC2129
       echo "# REDIS" >> .env
       echo "REDIS_HOST=redis" >> .env
@@ -442,7 +446,14 @@ handle_pgadmin() {
 handle_selected_services() {
 
   echo "Applying selected Services:"
-  handle_next_js
+  if [[ "${project_type}" == 0 ]]; then
+    handle_next_js
+  else
+    clear
+    echo "NodeJS Coming Soon..."
+    sleep 10
+  fi
+
 #  for ((i = 1; i <= ${#services[@]}; i++)); do
 #    if [[ ${selected[$i]} == 1 ]]; then
 #      handle_next_js
@@ -471,7 +482,7 @@ handle_selected_services() {
 while true; do
   print_services_menu
 
-  read -p "Select services  to add (1-4) or ('e' to execute 'b' back): " choice
+  read -p "Select services  to add (1-3) or ('e' to execute 'b' back): " choice
 
   if [[ $choice == 'b' || $choice == 'B' ]]; then
 #    echo "Exiting..."
