@@ -17,7 +17,7 @@ handle_menu() {
       echo ""
       echo "Typescript/Javascript Selected"
 #      ./scripts/js_ts/nextDocCom.sh ;;
-      ./scripts/js_ts/js_ts_menu.sh ;;
+      sh ./scripts/js_ts/js_ts_menu.sh ;;
 #      sleep 2 ;;
     3)
       echo ""

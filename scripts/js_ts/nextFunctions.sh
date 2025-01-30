@@ -451,7 +451,7 @@ handle_selected_services() {
   else
     clear
     echo "NodeJS Coming Soon..."
-    sleep 10
+    sleep 5
   fi
 
 #  for ((i = 1; i <= ${#services[@]}; i++)); do

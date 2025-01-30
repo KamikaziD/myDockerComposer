@@ -19,7 +19,7 @@ handle_menu() {
     "1")
       clear
       bash ./scripts/js_ts/nextFunctions.sh "${project_type}" ;;
-    "2") echo "check_docker_and_compose";;
+    "2") check_doc_com;;
     "3")
       working_dir=$(get_current_dir)
       echo "${working_dir}"
@@ -33,14 +33,13 @@ handle_menu() {
 print_menu() {
     clear
     echo
-#    print_banner
-    echo -e "${BOLDBLUE}NextJS Docker Generator${ENDCOLOR}"
+    echo "${BOLDBLUE}NextJS Docker Generator${ENDCOLOR}"
     echo
-    echo -e "${UNDERLINEYELLOW} Select action type:${ENDCOLOR}"
-    echo -e "${ITALICBLUE}1. Generate ${BOLDYELLOW}docker.compose.yml${ENDCOLOR}"
-    echo -e "${ITALICBLUE}2. Check if ${BOLDYELLOW}Docker & Docker Compose${ENDCOLOR} is installed"
+    echo "${UNDERLINEYELLOW} Select action type:${ENDCOLOR}"
+    echo "${ITALICBLUE}1. Generate ${BOLDYELLOW}docker.compose.yml${ENDCOLOR}"
+    echo "${ITALICBLUE}2. Check if ${BOLDYELLOW}Docker & Docker Compose${ENDCOLOR} is installed"
     echo
-    echo -e "${ENDCOLOR}Choose (1-2) or back (b):"
+    echo "${ENDCOLOR}Choose (1-2) or back (b):"
 }
 
 while true; do

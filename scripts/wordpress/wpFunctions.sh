@@ -15,12 +15,12 @@ cleanup() {
   fi
 }
 
-check_doc_com() {
-  clear
-  docker -v && docker compose version
-  # shellcheck disable=SC2162
-  read -p "Press Enter to continue..."
-}
+#check_doc_com() {
+#  clear
+#  docker -v && docker compose version
+#  # shellcheck disable=SC2162
+#  read -p "Press Enter to continue..."
+#}
 
 handle_menu() {
   local choice
