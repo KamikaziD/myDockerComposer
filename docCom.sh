@@ -16,7 +16,8 @@ handle_menu() {
     2)
       echo ""
       echo "Typescript/Javascript Selected"
-      ./nextDocCom.sh ;;
+#      ./scripts/js_ts/nextDocCom.sh ;;
+      ./scripts/js_ts/js_ts_menu.sh ;;
 #      sleep 2 ;;
     3)
       echo ""
@@ -35,10 +36,21 @@ handle_menu() {
   esac
 }
 
+print_header() {
+echo -e "${BOLDYELLOW} ###        ###      ###     ## ##     ###    #####               ###      ###     ##  #    ####      ###      ###      ###    #####   "
+echo -e " ####      #####   ######   ##  ##    #####   ######            ######    #####    ## ##   ######    #####    #####    #####   ######  "
+echo -e " ## ##    ##  ##   ##       #####    ##       ##  ##            ##       ##  ##   ######   #   ##   ##  ##   ##       ##       ##  ##  "
+echo -e "##   ##  ##   ##  ##       ####     ####      #####            ##       ##   ##  ### ###  ##  ##   ##   ##    ####   ####      #####   "
+echo -e "##    ## ##   ##  ##   ##  ## ##    ##   ##   ####             ##   ##  ##   ##  ##   ##  #####    ##   ##       ##  ##   ##   ####    "
+echo -e "##    ## ##  ##   ##  ###  ##  ##   ##  ###   ## ##            ##  ###  ##  ##   ##   ##  ##       ##  ##   ##   ##  ##  ###   ## ##   "
+echo -e "#######   ####     ####    ##  ###  ######    ##  ##            ####     ####    ##   ##  ##        ####     #####   ######    ##  ##  ${ENDCOLOR}"
+echo
+}
+
 print_menu() {
     clear
     echo
-#    print_banner
+    print_header
     echo -e "${BOLDBLUE}Doc Com - Docker Compose Generator${ENDCOLOR}"
     echo
     echo -e "${UNDERLINEYELLOW} Select your preferred programming language:${ENDCOLOR}"
