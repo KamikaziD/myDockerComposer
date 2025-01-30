@@ -5,14 +5,21 @@
 
 global working_dir
 
+if [ -z "$1" ]; then
+  echo "Error: Project Type not supplied."
+  exit 1
+else
+  project_type="$1"
+fi
+
 handle_menu() {
   local choice
   read -p "Enter your choice: " choice
   case $choice in
     "1")
       clear
-      ./scripts/js_ts/nextFunctions.sh ;;
-    "2") echo "check_docker_and_compose";;
+      bash ./scripts/js_ts/nextFunctions.sh "${project_type}" ;;
+    "2") check_doc_com;;
     "3")
       working_dir=$(get_current_dir)
       echo "${working_dir}"
@@ -27,13 +34,13 @@ print_menu() {
     clear
     echo
 #    print_banner
-    echo -e "${BOLDBLUE}NextJS Docker Generator${ENDCOLOR}"
+    echo "${BOLDBLUE}NodeJS Docker Generator${ENDCOLOR}"
     echo
-    echo -e "${UNDERLINEYELLOW} Select action type:${ENDCOLOR}"
-    echo -e "${ITALICBLUE}1. Generate ${BOLDYELLOW}docker.compose.yml${ENDCOLOR}"
-    echo -e "${ITALICBLUE}2. Check if ${BOLDYELLOW}Docker & Docker Compose${ENDCOLOR} is installed"
+    echo "${UNDERLINEYELLOW} Select action type:${ENDCOLOR}"
+    echo "${ITALICBLUE}1. Generate ${BOLDYELLOW}docker.compose.yml${ENDCOLOR}"
+    echo "${ITALICBLUE}2. Check if ${BOLDYELLOW}Docker & Docker Compose${ENDCOLOR} is installed"
     echo
-    echo -e "${ENDCOLOR}Choose (1-2) or back (b):"
+    echo "${ENDCOLOR}Choose (1-2) or back (b):"
 }
 
 while true; do

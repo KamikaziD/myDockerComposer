@@ -1,12 +1,15 @@
 #!/bin/bash
 
+. ./scripts/common/fonts.sh
 . ./scripts/common/functions.sh
 
 #declare -A selected=([1]=1 [2]=0 [3]=0 [4]=0)
 declare -A fe_be_selected=([1]=1 [2]=0)
 
 declare -A @project_name
-declare -A @selected_type=0
+declare -A @selected_type
+
+selected_type=0
 
 
 declare -A project_type=(
@@ -16,6 +19,9 @@ declare -A project_type=(
 
 print_project_type_menu() {
   clear
+  echo
+  echo "${BOLDBLUE}Javascript / Typescript${ENDCOLOR}"
+  echo
   echo "Choose your project type:"
   for ((i = 1; i <= ${#project_type[@]}; i++)); do
     if [[ ${fe_be_selected[$i]} == 1 ]]; then
@@ -24,6 +30,7 @@ print_project_type_menu() {
       echo "$i. [ ] ${project_type[$i]}"
     fi
   done
+  echo
 }
 
 while true; do
@@ -38,7 +45,13 @@ while true; do
 
   if [[ $choice == 'c' || $choice == 'C' ]]; then
     echo "Please select additional services"
-    bash ./scripts/js_ts/nextDocCom.sh "${selected_type}"
+    if [[ "${selected_type}" == 0 ]]; then
+      sh ./scripts/js_ts/nextDocCom.sh "${selected_type}"
+    fi
+    if [[ "${selected_type}" == 1 ]]; then
+      sh ./scripts/js_ts/nodeDocCom.sh "${selected_type}"
+    fi
+
 #    handle_selected_services
   fi
 
