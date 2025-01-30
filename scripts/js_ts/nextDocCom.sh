@@ -5,13 +5,20 @@
 
 global working_dir
 
+if [ -z "$1" ]; then
+  echo "Error: Project Type not supplied."
+  exit 1
+else
+  project_type="$1"
+fi
+
 handle_menu() {
   local choice
   read -p "Enter your choice: " choice
   case $choice in
     "1")
       clear
-      ./scripts/nextjs/nextFunctions.sh ;;
+      bash ./scripts/js_ts/nextFunctions.sh "${project_type}" ;;
     "2") echo "check_docker_and_compose";;
     "3")
       working_dir=$(get_current_dir)

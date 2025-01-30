@@ -1,6 +1,6 @@
 #!/bin/bash
 
-global g_project_name
+export g_project_name
 
 handle_project_directory() {
   if [ -z "$1" ]; then
