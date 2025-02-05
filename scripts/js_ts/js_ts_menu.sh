@@ -49,7 +49,10 @@ while true; do
       sh ./scripts/js_ts/nextDocCom.sh "${selected_type}"
     fi
     if [[ "${selected_type}" == 1 ]]; then
-      sh ./scripts/js_ts/nodeDocCom.sh "${selected_type}"
+      cd test || exit 1
+      clear
+      sh ./node.sh
+      cd ..
     fi
 
 #    handle_selected_services

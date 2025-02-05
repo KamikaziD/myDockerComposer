@@ -20,10 +20,6 @@ handle_menu() {
       clear
       bash ./scripts/js_ts/nextFunctions.sh "${project_type}" ;;
     "2") check_doc_com;;
-    "3")
-      working_dir=$(get_current_dir)
-      echo "${working_dir}"
-      sleep 2 ;;
     "b" | "B")
       clear
       exit 0 ;;
